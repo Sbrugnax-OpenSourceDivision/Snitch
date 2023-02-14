@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: snitch-config
+data:
+  application.properties: |
+    snitch.query_fetch_interval=15s
+    quarkus.mailer.auth-methods=DIGEST-MD5 CRAM-SHA256 CRAM-SHA1 CRAM-MD5 PLAIN LOGIN
+    quarkus.mailer.from=snitch.triggered@gmail.com
+    quarkus.mailer.host=smtp.gmail.com
+    quarkus.mailer.port=587
+    quarkus.mailer.mock=false
+  target_mails: |
+    l.venerandi@vargroup.it
+  prometheus_query: |
+    queryList:
+    - query:
+        query_value: node_memory_MemTotal_bytes
+    - query:
+        query_value: sum(kube_pod_container_resource_limits{resource='cpu'}) by(namespace)

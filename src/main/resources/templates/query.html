@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Execute Prometheus Query</title>
+</head>
+<body>
+
+<div style="width: 100%; overflow: hidden;">
+    <h2>Esegui query Prometheus</h2>
+    <form action="/query/exec" method="get">
+        <div style="float: left">
+            <input type="text" placeholder="query_prometheus" name="query">
+            <input type="submit">
+        </div>
+    </form>
+</div>
+
+<pre>
+    <code id="res">
+        {response}
+    </code>
+</pre>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+queryList:
+  - query:
+      query_value: node_memory_MemTotal_bytes
+      interval: 10s
+  - query:
+      query_value: sum(kube_pod_container_resource_limits{resource='cpu'}) by(namespace)
+      interval: 10s
+  - query:
+      query_value: sum(rate(container_network_transmit_bytes_total{container="POD",pod!="",namespace='argocd'}[5m])) BY (namespace)
+      interval: 10s
