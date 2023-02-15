@@ -10,6 +10,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import snitch.configparser.ConfigMapParser;
 import snitch.utils.HttpUtils;
 import snitch.utils.MailUtils;
+import snitch.utils.QueryUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,9 +25,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Path("/query")
 @Singleton
@@ -83,8 +86,8 @@ public class QueryManager {
         this.queryList = new ArrayList<QueryBean>();
 
         for(HashMap<String, HashMap<String, String>> query: tmp){
-            String url = URLEncoder.encode(query.get("query").get("query_value"), StandardCharsets.UTF_8);
-            this.queryList.add(new QueryBean(url));
+            String queryValue = URLEncoder.encode(query.get("query").get("value"), StandardCharsets.UTF_8);
+            this.queryList.add(new QueryBean(query.get("query").get("name"), query.get("query").get("id"), queryValue));
         }
 
         System.out.println("Fetch interval: "+fetchInterval+"\n" + this.queryList);
@@ -102,13 +105,14 @@ public class QueryManager {
                 dir.mkdir();
             }
 
-            BufferedWriter file = new BufferedWriter(new FileWriter("tmp/query.json", false));
-
             for(QueryBean queryBean:queryList){
+                BufferedWriter file = new BufferedWriter(new FileWriter("tmp/"+queryBean.getId()+".json",false));
                 file.write(queryBean.execQuery(token));
+                file.close();
             }
-
-            file.close();
+        }
+        catch( UnknownHostException e){
+            System.out.println("Impossibile connettersi al server Prometheus");
         }
         catch (Exception e){
             System.out.println("Esploso il json");
@@ -120,7 +124,12 @@ public class QueryManager {
     @Path("/mails")
     public String sendMails(){
 
-        mailer.send(MailUtils.buildMail("tmp/query.json", configMapParser.getTargetMails()));
+        //List<String> files = this.queryList.stream()
+        //        .map(queryBean -> "tmp/"+queryBean.getId()+".json").toList();
+
+        ArrayList<QueryResult> data = QueryUtils.getResultFromJson("tmp/CpuPrometheus.json");
+
+        mailer.send(MailUtils.buildMailFromData(data, configMapParser.getTargetMails()));
 
         return "mail sent";
     }

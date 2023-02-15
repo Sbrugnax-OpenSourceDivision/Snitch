@@ -7,15 +7,34 @@ import java.io.IOException;
 public class QueryBean {
 
     private String queryValue;
+    private String id;
+    private String queryName;
 
-    public QueryBean(String queryValue) {
+    public QueryBean(String queryName,String id, String queryValue) {
+        this.queryName = queryName;
         this.queryValue = queryValue;
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getQueryValue() {
         return queryValue;
     }
 
+    public String getQueryName() {
+        return queryName;
+    }
+
+    public void setQueryName(String queryName) {
+        this.queryName = queryName;
+    }
 
     @Override
     public String toString() {
