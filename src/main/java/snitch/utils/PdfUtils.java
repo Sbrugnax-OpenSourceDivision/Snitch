@@ -87,13 +87,13 @@ public class PdfUtils {
     private static JFreeChart createChart(XYDataset dataset, String name) {
 
         JFreeChart chart = ChartFactory.createXYLineChart(
-                "Average salary per age",
+                name,
                 "Age",
-                "Salary (€)",
+                "Millicores",
                 dataset,
                 PlotOrientation.VERTICAL,
-                true,
-                true,
+                false,
+                false,
                 false
         );
 
@@ -111,8 +111,6 @@ public class PdfUtils {
 
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.BLACK);
-
-        chart.getLegend().setFrame(BlockBorder.NONE);
 
         chart.setTitle(new TextTitle(name,
                         new Font("Serif", java.awt.Font.BOLD, 18)

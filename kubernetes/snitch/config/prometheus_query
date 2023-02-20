@@ -1,9 +1,5 @@
 queryList:
   - query:
-      id: DeadPod
-      name: Pod deceduti per namespace
-      value: sum by (namespace) (kube_pod_status_ready{condition="false"})
-  - query:
       id: CpuPrometheus
       name: Utilizzo cpu dei container prometheus
       value: container_cpu_usage_seconds_total{pod=~"prometheus-.*", image!="", container_name!="POD"}[1h]
