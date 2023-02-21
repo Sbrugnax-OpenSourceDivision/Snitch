@@ -47,7 +47,7 @@ public class QueryBean {
     }
 
     public String execQuery(String token) throws IOException {
-
+        // TODO Parametrizzare url di prometheus
         return HttpUtils.sendGET("https://prometheus-k8s-openshift-monitoring.apps.elclown.lab.local/api/v1/query?query="+this.getQueryValue(), token);
     }
 }

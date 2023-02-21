@@ -112,10 +112,7 @@ public class PdfUtils {
         plot.setDomainGridlinesVisible(true);
         plot.setDomainGridlinePaint(Color.BLACK);
 
-        chart.setTitle(new TextTitle(name,
-                        new Font("Serif", java.awt.Font.BOLD, 18)
-                )
-        );
+        chart.setTitle(new TextTitle(name));
 
         return chart;
     }

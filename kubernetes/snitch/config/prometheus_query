@@ -3,3 +3,7 @@ queryList:
       id: CpuPrometheus
       name: Utilizzo cpu dei container prometheus
       value: container_cpu_usage_seconds_total{pod=~"prometheus-.*", image!="", container_name!="POD"}[1h]
+  - query:
+      id: CpuConfluent
+      name: Utilizzo CPU dei container Confluent
+      value: container_cpu_usage_seconds_total{namespace="confluent", image!="", container_name!="POD"}[1h]
