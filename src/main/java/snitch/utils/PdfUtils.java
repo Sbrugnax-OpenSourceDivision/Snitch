@@ -37,8 +37,8 @@ public class PdfUtils {
             document.open();
 
             //add image for each query
-            int width = 300;
-            int height = 300;
+            int width = 500;
+            int height = 400;
 
             for(QueryResult result:data){
                 JFreeChart chart = createChart(getPlotDataset(result), result.podName);
@@ -101,7 +101,7 @@ public class PdfUtils {
 
         var renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesPaint(0, Color.RED);
-        renderer.setSeriesStroke(0, new BasicStroke(2.0f));
+        renderer.setSeriesStroke(0, new BasicStroke(1.5f));
 
         plot.setRenderer(renderer);
         plot.setBackgroundPaint(Color.white);
