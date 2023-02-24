@@ -1,9 +1,7 @@
 queryList:
-  - query:
-      id: CpuPrometheus
-      name: Utilizzo cpu dei container prometheus
-      value: container_cpu_usage_seconds_total{pod=~"prometheus-.*", image!="", container_name!="POD"}[1h]
-  - query:
-      id: CpuConfluent
-      name: Utilizzo CPU dei container Confluent
-      value: container_cpu_usage_seconds_total{namespace="confluent", image!="", container_name!="POD"}[1h]
+  - id: MonitoraggioPodLore
+    name: Pod esplosi nel namespace lore-testing
+    trigger: sum(kube_pod_status_ready{namespace="lore-testing",condition!="true"})
+    query:
+      - value: sum(container_memory_working_set_bytes{namespace="lore-testing"}) by (pod)
+        type: plot

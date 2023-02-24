@@ -16,9 +16,9 @@ import java.util.stream.Stream;
 public class ConfigMapParser {
 
     public Set<File> configFiles;
-    private HashMap<String,ArrayList<HashMap<String,HashMap<String,String>>>> tmp;
+    private HashMap<String,ArrayList<HashMap<String,Object>>> tmp;
 
-    private ArrayList<HashMap<String,HashMap<String,String>>> queryList;
+    private ArrayList<HashMap<String,Object>> queryList;
 
     private ArrayList<String> targetMails;
 
@@ -88,7 +88,7 @@ public class ConfigMapParser {
     }
 
     @Produces(MediaType.TEXT_PLAIN)
-    public ArrayList<HashMap<String, HashMap<String, String>>> getQueryList(){
+    public ArrayList<HashMap<String, Object>> getQueryList(){
         return queryList;
     }
 

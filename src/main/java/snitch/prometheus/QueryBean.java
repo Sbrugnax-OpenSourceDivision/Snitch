@@ -3,17 +3,58 @@ package snitch.prometheus;
 import snitch.utils.HttpUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueryBean {
+    public enum Type{
+        plot,
+        table
+    }
 
-    private String queryValue;
+    public static class Query{
+        public String value;
+        public Type type;
+
+        public Query(String value, Type type) {
+            this.value = value;
+            this.type = type;
+        }
+    }
+
+    private ArrayList<Query> queryList;
+
+    public QueryBean(ArrayList<Query> queryList, String id, String queryName, String triggerQuery) {
+        this.queryList = queryList;
+        this.id = id;
+        this.queryName = queryName;
+        this.triggerQuery = triggerQuery;
+    }
+
     private String id;
     private String queryName;
+    private String triggerQuery;
 
-    public QueryBean(String queryName,String id, String queryValue) {
+    public String getTriggerQuery() {
+        return triggerQuery;
+    }
+
+    public void setTriggerQuery(String triggerQuery) {
+        this.triggerQuery = triggerQuery;
+    }
+
+    public QueryBean(String queryName, String id, ArrayList<Query> queryList) {
         this.queryName = queryName;
-        this.queryValue = queryValue;
+        this.queryList = queryList;
         this.id = id;
+    }
+
+    public ArrayList<Query> getQueryList() {
+        return queryList;
+    }
+
+    public void setQueryList(ArrayList<Query> queryList) {
+        this.queryList = queryList;
     }
 
     public String getId() {
@@ -24,10 +65,6 @@ public class QueryBean {
         this.id = id;
     }
 
-    public String getQueryValue() {
-        return queryValue;
-    }
-
     public String getQueryName() {
         return queryName;
     }
@@ -36,18 +73,8 @@ public class QueryBean {
         this.queryName = queryName;
     }
 
-    @Override
-    public String toString() {
-        return "Query: "+queryValue+'\n';
-    }
-
-
-    public void setQueryValue(String queryValue) {
-        this.queryValue = queryValue;
-    }
-
-    public String execQuery(String token) throws IOException {
-        // TODO Parametrizzare url di prometheus
-        return HttpUtils.sendGET("https://prometheus-k8s-openshift-monitoring.apps.elclown.lab.local/api/v1/query?query="+this.getQueryValue(), token);
+    public String execQuery(String token, String url) throws IOException {
+        // TODO Refactor completo metodo di esecuzione query
+        return HttpUtils.sendGET(url + "/api/v1/query?query="+this.getQueryList(), token);
     }
 }

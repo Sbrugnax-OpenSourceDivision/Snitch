@@ -9,7 +9,6 @@ import snitch.utils.HttpUtils;
 import snitch.utils.MailUtils;
 import snitch.utils.PdfUtils;
 import snitch.utils.QueryUtils;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -41,6 +40,9 @@ public class QueryManager {
     @ConfigProperty(name = "snitch.query_fetch_interval")
     String fetchInterval;
 
+    @ConfigProperty(name = "openshift.prometheus_url")
+    String prometheusUrl;
+
     @Inject
     Mailer mailer;
 
@@ -61,7 +63,7 @@ public class QueryManager {
     public Response getQuery(@QueryParam("query") String query_value) {
 
         try {
-            String prometheusQuery = HttpUtils.sendGET("https://prometheus-k8s-openshift-monitoring.apps.elclown.lab.local/api/v1/query?query=" + query_value, token);
+            String prometheusQuery = HttpUtils.sendGET(prometheusUrl + "/api/v1/query?query=" + query_value, token);
             if (prometheusQuery.isEmpty()) {
                 response = "Help";
             } else {
@@ -76,13 +78,35 @@ public class QueryManager {
 
     @Scheduled(every = "1h", delayed = "5s")
     public void buildQueryList() {
-        ArrayList<HashMap<String, HashMap<String, String>>> tmp = configMapParser.getQueryList();
 
         this.queryList = new ArrayList<QueryBean>();
 
-        for (HashMap<String, HashMap<String, String>> query : tmp) {
-            String queryValue = URLEncoder.encode(query.get("query").get("value"), StandardCharsets.UTF_8);
-            this.queryList.add(new QueryBean(query.get("query").get("name"), query.get("query").get("id"), queryValue));
+        String id = null;
+        String trigger = null;
+        ArrayList<QueryBean.Query> querys = null;
+        String name = null;
+
+        for (HashMap<String, Object> query : configMapParser.getQueryList()) {
+
+            name = (String) query.get("name");
+            id = (String)query.get("id");
+            trigger = URLEncoder.encode((String) query.get("trigger"), StandardCharsets.UTF_8);
+            querys = new ArrayList<>();
+
+            ArrayList<HashMap<String,String>> tmp =(ArrayList<HashMap<String,String>>) query.get("query");
+            for(HashMap<String,String> q:tmp){
+                querys.add(new QueryBean.Query(
+                        URLEncoder.encode(q.get("value"), StandardCharsets.UTF_8),
+                        QueryBean.Type.valueOf(q.get("type"))
+                ));
+            }
+
+            this.queryList.add(new QueryBean(
+                    querys,
+                    id,
+                    name,
+                    trigger
+            ));
         }
 
         System.out.println("Fetch interval: " + fetchInterval + "\n" + this.queryList);
@@ -100,9 +124,9 @@ public class QueryManager {
                 dir.mkdir();
             }
 
-            for (QueryBean queryBean : queryList) {
+            for (QueryBean queryBean : this.queryList) {
                 BufferedWriter file = new BufferedWriter(new FileWriter("tmp/" + queryBean.getId() + ".json", false));
-                file.write(queryBean.execQuery(token));
+                file.write(queryBean.execQuery(token, prometheusUrl)); // TODO gestire una lista di query
                 file.close();
             }
         } catch (UnknownHostException e) {
