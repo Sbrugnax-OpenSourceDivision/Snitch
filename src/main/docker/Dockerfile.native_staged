@@ -14,7 +14,15 @@ RUN ./mvnw package -Pnative
 FROM quay.io/quarkus/quarkus-micro-image:2.0
 WORKDIR /work/
 COPY --from=build /code/target/*-runner /work/application
-COPY kubernetes/snitch /snitch
+
+# Install fonts
+RUN microdnf install yum \
+    && yum update -y \
+    && yum install -y wget \
+    && wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+    && yum install -y epel-release-latest-8.noarch.rpm \
+    && yum install -y curl cabextract xorg-x11-font-utils fontconfig \
+    && rpm -i https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
 
 # set up permissions for user `1001`
 RUN chmod 775 /work /work/application \

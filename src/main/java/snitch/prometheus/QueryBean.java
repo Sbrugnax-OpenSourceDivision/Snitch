@@ -77,4 +77,10 @@ public class QueryBean {
         // TODO Refactor completo metodo di esecuzione query
         return HttpUtils.sendGET(url + "/api/v1/query?query="+this.getQueryList(), token);
     }
+
+    public Boolean isTriggered(String token){
+
+        // TODO Check se la triggering query ritorna 1, in caso triggerare execQuery e buildare pdf
+        return false;
+    }
 }

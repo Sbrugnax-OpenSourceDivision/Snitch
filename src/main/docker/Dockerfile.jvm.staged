@@ -47,12 +47,6 @@ RUN microdnf install yum \
     && yum install -y epel-release-latest-8.noarch.rpm \
     && yum install -y curl cabextract xorg-x11-font-utils fontconfig \
     && rpm -i https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm
-#    && yum repolist \
-#    && yum install -y rpm-build \
-#    && yum install -y ttmkfdir \
-#    && yum install -y cabextract \
-#    && wget http://corefonts.sourceforge.net/msttcorefonts-2.5-1.spec \
-#    && rpmbuild -ba msttcorefonts-2.5-1.spec
 
 # Install java and the run-java script
 # Also set up permissions for user `1001`
