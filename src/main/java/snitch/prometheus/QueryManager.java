@@ -143,6 +143,7 @@ public class QueryManager {
     @GET
     @Path("/mails")
     @Produces(MediaType.TEXT_PLAIN)
+    // TODO Modificare implementazione con trigger
     public String sendMails() throws FileNotFoundException {
 
         List<String> files_json = this.queryList.stream()

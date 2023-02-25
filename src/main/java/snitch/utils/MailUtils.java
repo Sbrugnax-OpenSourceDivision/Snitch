@@ -26,8 +26,6 @@ public class MailUtils {
         tmp.setSubject("Snitch recap");
         tmp.setText("O' snicciu ha letto u poddu\naiuto");
 
-
-        //TODO Creare grafici per ogni file, utilizzando QueryUtils
         for (String file : files) {
             tmp.addAttachment(file, new File(file), "application/pdf");
         }
