@@ -3,5 +3,9 @@ queryList:
     name: Pod esplosi nel namespace lore-testing
     trigger: sum(kube_pod_status_ready{namespace="lore-testing",condition!="true"})
     query:
-      - value: sum(container_memory_working_set_bytes{namespace="lore-testing"}) by (pod)
+      - id: podStatus
+        value: sum(kube_pod_status_ready{namespace="lore-testing",condition="true"}) by(pod)
+        type: table
+      - id: ram
+        value: container_memory_working_set_bytes{namespace="lore-testing",image!="", container_name!="POD"}[1h]
         type: plot

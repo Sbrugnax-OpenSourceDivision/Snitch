@@ -1,7 +1,11 @@
 package snitch.prometheus;
 
 import snitch.utils.HttpUtils;
+import snitch.utils.QueryUtils;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +19,10 @@ public class QueryBean {
     public static class Query{
         public String value;
         public Type type;
+        public String id;
 
-        public Query(String value, Type type) {
+        public Query(String id, String value, Type type) {
+            this.id = id;
             this.value = value;
             this.type = type;
         }
@@ -73,14 +79,37 @@ public class QueryBean {
         this.queryName = queryName;
     }
 
-    public String execQuery(String token, String url) throws IOException {
-        // TODO Refactor completo metodo di esecuzione query
-        return HttpUtils.sendGET(url + "/api/v1/query?query="+this.getQueryList(), token);
+    public void getQueryData(String token, String url) throws IOException {
+
+        BufferedWriter file = null;
+
+        File dir = new File("tmp/" + this.getId());
+
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+
+        for(Query q: this.queryList){
+            file  = new BufferedWriter(new FileWriter("tmp/" + this.getId() + "/" + q.id + ".json", false));
+            file.write(
+                    HttpUtils.sendGET(url + "/api/v1/query?query="+q.value, token)
+            );
+            file.close();
+        }
+
     }
 
-    public Boolean isTriggered(String token){
+    public boolean isTriggered(String token, String url) throws IOException {
 
-        // TODO Check se la triggering query ritorna 1, in caso triggerare execQuery e buildare pdf
+        String jsonData = HttpUtils.sendGET(url + "/api/v1/query?query="+this.getTriggerQuery(), token);
+
+        ArrayList<Integer> tmp = QueryUtils.getResultFromJsonData(jsonData);
+
+        for(int q : tmp){
+            if(q == 0)
+                return true;
+        }
+
         return false;
     }
 }

@@ -96,6 +96,7 @@ public class QueryManager {
             ArrayList<HashMap<String,String>> tmp =(ArrayList<HashMap<String,String>>) query.get("query");
             for(HashMap<String,String> q:tmp){
                 querys.add(new QueryBean.Query(
+                        q.get("id"),
                         URLEncoder.encode(q.get("value"), StandardCharsets.UTF_8),
                         QueryBean.Type.valueOf(q.get("type"))
                 ));
@@ -109,7 +110,7 @@ public class QueryManager {
             ));
         }
 
-        System.out.println("Fetch interval: " + fetchInterval + "\n" + this.queryList);
+        System.out.println("Fetch interval: " + fetchInterval);
     }
 
     @Scheduled(every = "${snitch.query_fetch_interval}", delayed = "10s")
@@ -125,9 +126,11 @@ public class QueryManager {
             }
 
             for (QueryBean queryBean : this.queryList) {
-                BufferedWriter file = new BufferedWriter(new FileWriter("tmp/" + queryBean.getId() + ".json", false));
-                file.write(queryBean.execQuery(token, prometheusUrl)); // TODO gestire una lista di query
-                file.close();
+
+                if(queryBean.isTriggered(token,prometheusUrl)){
+                    queryBean.getQueryData(token, prometheusUrl);
+                }
+
             }
         } catch (UnknownHostException e) {
             System.out.println("Impossibile connettersi al server Prometheus");
