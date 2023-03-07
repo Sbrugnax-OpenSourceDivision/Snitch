@@ -1,14 +1,13 @@
-package snitch.prometheus;
+package snitch.prometheus.beans;
 
-import snitch.utils.HttpUtils;
-import snitch.utils.QueryUtils;
+import snitch.http.HttpUtils;
+import snitch.prometheus.QueryUtils;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class QueryBean {
     public enum Type{

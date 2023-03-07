@@ -1,6 +1,4 @@
-package snitch.utils;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+package snitch.http;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;

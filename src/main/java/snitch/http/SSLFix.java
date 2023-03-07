@@ -1,4 +1,4 @@
-package snitch.utils;
+package snitch.http;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;

@@ -1,7 +1,7 @@
-package snitch.utils;
+package snitch.mails;
 
 import io.quarkus.mailer.Mail;
-import snitch.prometheus.QueryResult;
+import snitch.prometheus.beans.QueryResult;
 
 import java.io.File;
 import java.util.ArrayList;

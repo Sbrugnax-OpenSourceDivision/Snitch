@@ -1,10 +1,10 @@
-package snitch.utils;
+package snitch.prometheus;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import snitch.prometheus.QueryResult;
+import snitch.prometheus.beans.QueryResult;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -12,7 +12,8 @@ import java.util.ArrayList;
 
 public class QueryUtils {
 
-    public static ArrayList<QueryResult> getResultFromJson(String filename) {
+    // TODO getResultFromJson deve prendere in input il querybean associato
+    public static ArrayList<QueryResult> getResultFromJson(String filename, ) {
 
         ArrayList<QueryResult> result = new ArrayList<>();
 

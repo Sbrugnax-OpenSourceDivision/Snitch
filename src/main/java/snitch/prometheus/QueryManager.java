@@ -5,10 +5,12 @@ import io.quarkus.qute.Template;
 import io.quarkus.scheduler.Scheduled;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import snitch.configparser.ConfigMapParser;
-import snitch.utils.HttpUtils;
-import snitch.utils.MailUtils;
-import snitch.utils.PdfUtils;
-import snitch.utils.QueryUtils;
+import snitch.prometheus.beans.QueryBean;
+import snitch.prometheus.beans.QueryResult;
+import snitch.http.HttpUtils;
+import snitch.mails.MailUtils;
+import snitch.mails.PdfUtils;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -127,7 +129,7 @@ public class QueryManager {
 
             for (QueryBean queryBean : this.queryList) {
 
-                if(queryBean.isTriggered(token,prometheusUrl)){
+                if(queryBean.isTriggered(token, prometheusUrl)){
                     queryBean.getQueryData(token, prometheusUrl);
                 }
 
