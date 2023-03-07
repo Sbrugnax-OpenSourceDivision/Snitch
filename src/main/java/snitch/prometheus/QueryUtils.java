@@ -4,23 +4,69 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import snitch.prometheus.beans.QueryBean;
 import snitch.prometheus.beans.QueryResult;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class QueryUtils {
 
-    // TODO getResultFromJson deve prendere in input il querybean associato
-    public static ArrayList<QueryResult> getResultFromJson(String filename, ) {
+    public static HashMap<String, ArrayList<QueryResult>> getResultFromJson(QueryBean queryBean) {
 
-        ArrayList<QueryResult> result = new ArrayList<>();
+        HashMap<String, ArrayList<QueryResult>> result = new HashMap<>();
 
         try{
-            JsonObject jobj = new Gson().fromJson(new FileReader(filename), JsonObject.class);
 
-            parseJson(result, jobj);
+            for(QueryBean.Query q: queryBean.getQueryList()){
+
+                ArrayList<QueryResult> element = new ArrayList<>();
+                JsonObject jobj = new Gson().fromJson(
+                        new FileReader("tmp/" + queryBean.getId() + "/" + q.id + ".json"), JsonObject.class);
+
+                for(JsonElement query:jobj.getAsJsonObject("data").getAsJsonArray("result")){
+
+                    String name = query.getAsJsonObject().getAsJsonObject("metric")
+                            .get("pod")
+                            .getAsString();
+
+                    JsonArray tmp;
+                    if(q.type.equals(QueryBean.Type.table)){
+                        tmp = query.getAsJsonObject()
+                                .getAsJsonArray("value");
+                    }
+                    else{
+                        tmp = query.getAsJsonObject()
+                                .getAsJsonArray("values");
+                    }
+
+                    ArrayList<Float> timestamps = new ArrayList<>();
+                    ArrayList<Float> values = new ArrayList<>();
+
+                    if(q.type.equals(QueryBean.Type.table)){
+                        timestamps.add(tmp.get(0)
+                                .getAsFloat());
+                        values.add(tmp.get(1)
+                                .getAsFloat());
+                    }
+                    else{
+                        for(JsonElement entry:tmp){
+
+                            timestamps.add(entry.getAsJsonArray().get(0)
+                                    .getAsFloat());
+                            values.add(entry.getAsJsonArray().get(1)
+                                    .getAsFloat());
+                        }
+                    }
+
+                    element.add(new QueryResult(q, name, values, timestamps));
+                }
+
+                result.put(queryBean.getId() + " - " + q.id, element);
+            }
+
         }
         catch (FileNotFoundException e){
             System.out.println("File non trovato");
@@ -44,29 +90,5 @@ public class QueryUtils {
         return result;
     }
 
-    private static void parseJson(ArrayList<QueryResult> result, JsonObject jobj) {
-        for(JsonElement query:jobj.getAsJsonObject("data").getAsJsonArray("result")){
-
-            String name = query.getAsJsonObject().getAsJsonObject("metric")
-                    .get("pod")
-                    .getAsString();
-
-            JsonArray tmp = query.getAsJsonObject()
-                    .getAsJsonArray("values");
-
-            ArrayList<Float> timestamps = new ArrayList<>();
-            ArrayList<Float> values = new ArrayList<>();
-
-            for(JsonElement entry:tmp){
-
-                timestamps.add(entry.getAsJsonArray().get(0)
-                        .getAsFloat());
-                values.add(entry.getAsJsonArray().get(1)
-                        .getAsFloat());
-            }
-
-            result.add(new QueryResult(name, values, timestamps));
-        }
-    }
 
 }

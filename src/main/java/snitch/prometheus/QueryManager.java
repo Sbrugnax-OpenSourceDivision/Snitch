@@ -145,8 +145,14 @@ public class QueryManager {
     @GET
     @Path("/mails")
     @Produces(MediaType.TEXT_PLAIN)
-    // TODO Modificare implementazione con trigger
+    // TODO Modificare implementazione per accettare una mappa di data
     public String sendMails() throws FileNotFoundException {
+
+        for(QueryBean q: this.queryList){
+            QueryUtils.getResultFromJson(q);
+        }
+
+        /*
 
         List<String> files_json = this.queryList.stream()
                 .map(queryBean -> "tmp/" + queryBean.getId() + ".json").toList();
@@ -162,6 +168,9 @@ public class QueryManager {
 
         mailer.send(MailUtils.buildMailComposed(files_pdf
                 , configMapParser.getTargetMails()));
+
+
+         */
 
 
         return "mail sent";
