@@ -129,7 +129,7 @@ public class QueryManager {
 
             for (QueryBean queryBean : this.queryList) {
 
-                if(queryBean.isTriggered(token, prometheusUrl)){
+                if(!queryBean.isTriggered(token, prometheusUrl)){
                     queryBean.getQueryData(token, prometheusUrl);
                 }
 
@@ -155,11 +155,13 @@ public class QueryManager {
 
             PdfUtils.buildPdf(q, data, new FileOutputStream("tmp/" + q.getId() + ".pdf"));
         }
-
+        /*
         mailer.send(MailUtils.buildMailComposed(this.queryList.stream().map(
                 queryBean -> "tmp/" + queryBean.getId() + ".pdf"
                 ).toList()
                 , configMapParser.getTargetMails()));
+
+         */
 
         return "mail sent";
     }

@@ -44,6 +44,7 @@ public class PdfUtils {
             //open document
             document.open();
             document.addTitle("Snitch recap: "+ queryBean.getQueryName());
+            document.add(new Phrase("Snitch recap: "+ queryBean.getQueryName()));
 
             for(Map.Entry<String, ArrayList<QueryResult>> line : data.entrySet()){
 
@@ -107,9 +108,13 @@ public class PdfUtils {
             if(q.values.get(0) == 1)
                 try {
                     try {
-                        cell = new PdfPCell(Image.getInstance("/snitch/resources/true.png"));
+                        Image image = Image.getInstance("/snitch/resources/true.png");
+                        image.scaleAbsolute(16,16);
+                        cell = new PdfPCell(image);
                     } catch (IOException | BadElementException e){
-                        cell = new PdfPCell(Image.getInstance("kubernetes/snitch/resources/true.png"));
+                        Image image = Image.getInstance("kubernetes/snitch/resources/true.png");
+                        image.scaleAbsolute(16,16);
+                        cell = new PdfPCell(image);
                     }
                 }
                 catch (IOException | BadElementException e){
@@ -119,9 +124,13 @@ public class PdfUtils {
             else
                 try{
                     try {
-                        cell = new PdfPCell(Image.getInstance("/snitch/resources/dead.png"));
+                        Image image = Image.getInstance("/snitch/resources/dead.png");
+                        image.scaleAbsolute(16,16);
+                        cell = new PdfPCell(image);
                     } catch (IOException | BadElementException e){
-                        cell = new PdfPCell(Image.getInstance("kubernetes/snitch/resources/dead.png"));
+                        Image image = Image.getInstance("kubernetes/snitch/resources/dead.png");
+                        image.scaleAbsolute(16,16);
+                        cell = new PdfPCell(image);
                     }
                 }
                 catch (IOException | BadElementException e){
@@ -129,7 +138,6 @@ public class PdfUtils {
                 }
 
             cell.setColspan(2);
-
             result.addCell(cell);
         }
 
