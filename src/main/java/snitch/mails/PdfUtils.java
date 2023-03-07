@@ -1,8 +1,9 @@
 package snitch.mails;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -13,19 +14,27 @@ import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import snitch.prometheus.beans.QueryBean;
 import snitch.prometheus.beans.QueryResult;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 public class PdfUtils {
 
-    public static boolean buildPdf(ArrayList<QueryResult> data, OutputStream outputStream) {
+    public static void buildPdf(QueryBean queryBean, HashMap<String, ArrayList<QueryResult>> data, OutputStream outputStream) {
 
         Document document = null;
         PdfWriter writer = null;
         boolean response = false;
+
+        // Plot settings
+        int width = 400;
+        int height = 300;
 
         try {
             //instantiate document and writer
@@ -34,16 +43,23 @@ public class PdfUtils {
 
             //open document
             document.open();
+            document.addTitle("Snitch recap: "+ queryBean.getQueryName());
 
-            //add image for each query
-            int width = 500;
-            int height = 400;
+            for(Map.Entry<String, ArrayList<QueryResult>> line : data.entrySet()){
 
-            for(QueryResult result:data){
-                JFreeChart chart = createChart(getPlotDataset(result), result.podName);
-                BufferedImage bufferedImage = chart.createBufferedImage(width, height);
-                Image image = Image.getInstance(writer, bufferedImage, 1.0f);
-                document.add(image);
+                document.add(new Phrase(line.getKey()));
+
+                if(line.getValue().get(0).query.type.equals(QueryBean.Type.table)){
+                    document.add(getTableFromData(line.getValue()));
+                }
+                else{
+                    for(QueryResult result: line.getValue()){
+                        JFreeChart chart = createChart(getPlotDataset(result), result.podName);
+                        BufferedImage bufferedImage = chart.createBufferedImage(width, height);
+                        Image image = Image.getInstance(writer, bufferedImage, 1.0f);
+                        document.add(image);
+                    }
+                }
             }
 
             //release resources
@@ -69,7 +85,55 @@ public class PdfUtils {
             }
         }
 
-        return response;
+    }
+
+    private static PdfPTable getTableFromData(ArrayList<QueryResult> data) throws BadElementException, IOException {
+
+        PdfPTable result = new PdfPTable(2);
+
+        // Prima colonna
+        PdfPCell cell = new PdfPCell(new Phrase("Nome Pod"));
+        result.addCell(cell);
+
+        cell = new PdfPCell(new Phrase("Status"));
+        result.addCell(cell);
+
+        for(QueryResult q: data){
+
+            // Nome pod
+            cell = new PdfPCell(new Phrase(q.podName));
+            result.addCell(cell);
+
+            if(q.values.get(0) == 1)
+                try {
+                    try {
+                        cell = new PdfPCell(Image.getInstance("/snitch/resources/true.png"));
+                    } catch (IOException | BadElementException e){
+                        cell = new PdfPCell(Image.getInstance("kubernetes/snitch/resources/true.png"));
+                    }
+                }
+                catch (IOException | BadElementException e){
+                   cell = new PdfPCell(new Phrase("TRUE"));
+                }
+
+            else
+                try{
+                    try {
+                        cell = new PdfPCell(Image.getInstance("/snitch/resources/dead.png"));
+                    } catch (IOException | BadElementException e){
+                        cell = new PdfPCell(Image.getInstance("kubernetes/snitch/resources/dead.png"));
+                    }
+                }
+                catch (IOException | BadElementException e){
+                    cell = new PdfPCell(new Phrase("FALSE"));
+                }
+
+            cell.setColspan(2);
+
+            result.addCell(cell);
+        }
+
+        return result;
     }
 
     private static XYDataset getPlotDataset(QueryResult data){
@@ -88,7 +152,7 @@ public class PdfUtils {
         JFreeChart chart = ChartFactory.createXYLineChart(
                 name,
                 "Age",
-                "Millicores",
+                "Ram ",
                 dataset,
                 PlotOrientation.VERTICAL,
                 false,

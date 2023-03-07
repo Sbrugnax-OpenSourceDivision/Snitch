@@ -148,30 +148,18 @@ public class QueryManager {
     // TODO Modificare implementazione per accettare una mappa di data
     public String sendMails() throws FileNotFoundException {
 
+        HashMap<String, ArrayList<QueryResult>> data;
+
         for(QueryBean q: this.queryList){
-            QueryUtils.getResultFromJson(q);
+            data = QueryUtils.getResultFromJson(q);
+
+            PdfUtils.buildPdf(q, data, new FileOutputStream("tmp/" + q.getId() + ".pdf"));
         }
 
-        /*
-
-        List<String> files_json = this.queryList.stream()
-                .map(queryBean -> "tmp/" + queryBean.getId() + ".json").toList();
-
-        for (String file : files_json) {
-            ArrayList<QueryResult> data = QueryUtils.getResultFromJson(file);
-            //build pdf
-            PdfUtils.buildPdf(data, new FileOutputStream(file.replace(".json", ".pdf")));
-        }
-
-        List<String> files_pdf = files_json.stream().map(
-                file -> file.replace(".json", ".pdf")).toList();
-
-        mailer.send(MailUtils.buildMailComposed(files_pdf
+        mailer.send(MailUtils.buildMailComposed(this.queryList.stream().map(
+                queryBean -> "tmp/" + queryBean.getId() + ".pdf"
+                ).toList()
                 , configMapParser.getTargetMails()));
-
-
-         */
-
 
         return "mail sent";
     }
