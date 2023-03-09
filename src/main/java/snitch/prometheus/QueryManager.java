@@ -133,7 +133,7 @@ public class QueryManager {
 
                 if(!queryBean.isTriggered(token, prometheusUrl)){
                     queryBean.getQueryData(token, prometheusUrl);
-                    triggered = true;
+                    //triggered = true;
                 }
 
             }
