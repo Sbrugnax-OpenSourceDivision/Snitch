@@ -127,13 +127,19 @@ public class QueryManager {
                 dir.mkdir();
             }
 
+            Boolean triggered = false;
+
             for (QueryBean queryBean : this.queryList) {
 
                 if(!queryBean.isTriggered(token, prometheusUrl)){
                     queryBean.getQueryData(token, prometheusUrl);
+                    triggered = true;
                 }
 
             }
+
+            if(triggered)
+                sendMails();
         } catch (UnknownHostException e) {
             System.out.println("Impossibile connettersi al server Prometheus");
         } catch (Exception e) {
@@ -155,13 +161,11 @@ public class QueryManager {
 
             PdfUtils.buildPdf(q, data, new FileOutputStream("tmp/" + q.getId() + ".pdf"));
         }
-        /*
+
         mailer.send(MailUtils.buildMailComposed(this.queryList.stream().map(
                 queryBean -> "tmp/" + queryBean.getId() + ".pdf"
                 ).toList()
                 , configMapParser.getTargetMails()));
-
-         */
 
         return "mail sent";
     }

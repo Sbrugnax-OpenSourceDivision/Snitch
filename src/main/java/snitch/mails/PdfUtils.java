@@ -11,6 +11,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.TextTitle;
+import org.jfree.data.time.Hour;
+import org.jfree.data.time.TimeSeries;
+import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -21,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -146,10 +150,11 @@ public class PdfUtils {
 
     private static XYDataset getPlotDataset(QueryResult data){
 
-        XYSeriesCollection result = new XYSeriesCollection();
-        XYSeries series = new XYSeries("Random");
+        TimeSeriesCollection result = new TimeSeriesCollection();
+        TimeSeries series = new TimeSeries("Date");
         for (int i = 0; i < data.timestamps.size(); i++) {
-            series.add(data.timestamps.get(i),data.values.get(i));
+            series.addOrUpdate(new Hour(new Date(data.timestamps.get(i) * 1000)),
+                    data.values.get(i));
         }
         result.addSeries(series);
         return result;
@@ -157,12 +162,11 @@ public class PdfUtils {
 
     private static JFreeChart createChart(XYDataset dataset, String name) {
 
-        JFreeChart chart = ChartFactory.createXYLineChart(
+        JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 name,
-                "Age",
+                "Time",
                 "Ram ",
                 dataset,
-                PlotOrientation.VERTICAL,
                 false,
                 false,
                 false

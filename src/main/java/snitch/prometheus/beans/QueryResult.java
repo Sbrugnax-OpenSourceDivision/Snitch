@@ -7,9 +7,9 @@ public class QueryResult {
     public QueryBean.Query query;
     public String podName;
     public ArrayList<Float> values;
-    public ArrayList<Float> timestamps;
+    public ArrayList<Long> timestamps;
 
-    public QueryResult(QueryBean.Query query, String podName, ArrayList<Float> values, ArrayList<Float> timestamps) {
+    public QueryResult(QueryBean.Query query, String podName, ArrayList<Float> values, ArrayList<Long> timestamps) {
         this.query = query;
         this.podName = podName;
         this.values = values;

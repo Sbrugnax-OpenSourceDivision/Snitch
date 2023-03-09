@@ -42,12 +42,12 @@ public class QueryUtils {
                                 .getAsJsonArray("values");
                     }
 
-                    ArrayList<Float> timestamps = new ArrayList<>();
+                    ArrayList<Long> timestamps = new ArrayList<>();
                     ArrayList<Float> values = new ArrayList<>();
 
                     if(q.type.equals(QueryBean.Type.table)){
                         timestamps.add(tmp.get(0)
-                                .getAsFloat());
+                                .getAsLong());
                         values.add(tmp.get(1)
                                 .getAsFloat());
                     }
@@ -55,7 +55,7 @@ public class QueryUtils {
                         for(JsonElement entry:tmp){
 
                             timestamps.add(entry.getAsJsonArray().get(0)
-                                    .getAsFloat());
+                                    .getAsLong());
                             values.add(entry.getAsJsonArray().get(1)
                                     .getAsFloat());
                         }
