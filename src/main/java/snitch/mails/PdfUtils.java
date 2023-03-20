@@ -1,5 +1,6 @@
 package snitch.mails;
 
+import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -14,9 +15,11 @@ import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
+import org.w3c.dom.Text;
 import snitch.prometheus.beans.QueryBean;
 import snitch.prometheus.beans.QueryResult;
 
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -45,8 +48,15 @@ public class PdfUtils {
 
             //open document
             document.open();
+
             document.addTitle("Snitch recap: " + queryBean.getQueryName());
-            document.add(new Phrase("Snitch recap: " + queryBean.getQueryName()));
+
+            Phrase title = new Phrase("Snitch recap: " + queryBean.getQueryName());
+            Font font = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+            font.setColor(BaseColor.RED);
+            font.setSize(26);
+            title.setFont(font);
+            document.add(title);
 
             for (Map.Entry<String, ArrayList<QueryResult>> line : data.entrySet()) {
 
@@ -99,9 +109,11 @@ public class PdfUtils {
 
         // Prima colonna
         PdfPCell cell = new PdfPCell(new Phrase("Nome Pod"));
+        cell.setBackgroundColor(new BaseColor(245, 172, 39));
         result.addCell(cell);
 
         cell = new PdfPCell(new Phrase("Status"));
+        cell.setBackgroundColor(new BaseColor(245, 172, 39));
         result.addCell(cell);
 
         for (QueryResult q : data) {
