@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  application.properties: |
+    snitch.query_fetch_interval=150s
+    snitch.send_mail_on_trigger=false
+    quarkus.mailer.auth-methods=DIGEST-MD5 CRAM-SHA256 CRAM-SHA1 CRAM-MD5 PLAIN LOGIN
+    quarkus.mailer.from=example.mail@gmail.com
+    quarkus.mailer.host=smtp.gmail.com
+    quarkus.mailer.port=587
+    quarkus.mailer.mock=false
+    openshift.prometheus_url=https://prometheuw.url.example
+  prometheus_query: |
+    queryList:
+    - id: ExampleQuery
+      name: Stats of pods running in namespace "snitch"
+      trigger: sum(kube_pod_status_ready{namespace="snitch",condition!="true"})
+      query:
+        - id: podStatus
+          value: sum(kube_pod_status_ready{namespace="snitch",condition="true"}) by(pod)
+          type: table
+        - id: ramUsage
+          value: container_memory_working_set_bytes{namespace="snitch",image!="", container_name!="POD"}[10h]
+          type: plot
+  target_mails: |
+    target.example@gmail.com
+metadata:
+  name: snitch-config
+  namespace: snitch
+---
+apiVersion: v1
+kind: Secret
+data:
+  openshift.bearertoken: QmVhcmVyIFRva2UgdG8gYWNjZXNzIHByb21ldGhldXMK
+  quarkus.mailer.username: ZW1haWwgdGhhdCBzZW5kcyB5b3UgdGhlIHJlcG9ydHMK
+  quarkus.mailer.password: ZW1haWwgcGFzc3dvcmQ=
+metadata:
+  name: snitch-secrets
+  namespace: snitch
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: snitch
+  name: snitch-jvm
+  namespace: snitch
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: snitch
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: snitch
+    spec:
+      containers:
+        - env:
+            - name: DEBUG_PORT
+              value: "5858"
+            - name: PROJECTS_ROOT
+              value: /projects
+            - name: PROJECT_SOURCE
+              value: /projects
+          envFrom:
+            - secretRef:
+                name: snitch-secrets
+          image: quay.io/lore_09/snitch:latest
+          imagePullPolicy: Always
+          name: snitch-jvm
+          ports:
+            - containerPort: 8080
+              name: 8080-tcp
+              protocol: TCP
+            - containerPort: 5858
+              name: 5858-tcp
+              protocol: TCP
+          resources:
+            limits:
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /snitch/config
+              name: config-volume
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: snitch-config
+          name: config-volume
