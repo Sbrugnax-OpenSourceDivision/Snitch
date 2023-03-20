@@ -7,5 +7,15 @@ queryList:
         value: sum(kube_pod_status_ready{namespace="lore-testing",condition="true"}) by(pod)
         type: table
       - id: ram
-        value: container_memory_working_set_bytes{namespace="lore-testing",image!="", container_name!="POD"}[1h]
+        value: container_memory_working_set_bytes{namespace="lore-testing",image!="", container_name!="POD"}[2h]
+        type: plot
+  - id: MonitoraggioConfluent
+    name: Cluster inmacolada che muore
+    trigger: sum(kube_pod_status_ready{namespace="confluent",condition!="true"})
+    query:
+      - id: podStatus
+        value: sum(kube_pod_status_ready{namespace="confluent",condition="true"}) by(pod)
+        type: table
+      - id: ram
+        value: container_memory_working_set_bytes{namespace="confluent",image!="", container_name!="POD"}[10h]
         type: plot

@@ -39,6 +39,9 @@ public class QueryManager {
     private ArrayList<QueryBean> queryList;
     @ConfigProperty(name = "openshift.bearertoken")
     String token;
+
+    @ConfigProperty(name = "snitch.send_mail_on_trigger")
+    boolean sendOnTrigger;
     @ConfigProperty(name = "snitch.query_fetch_interval")
     String fetchInterval;
 
@@ -127,16 +130,19 @@ public class QueryManager {
                 dir.mkdir();
             }
 
-            Boolean triggered = false;
+            boolean triggered = false;
 
             for (QueryBean queryBean : this.queryList) {
 
-                if(!queryBean.isTriggered(token, prometheusUrl)){
-                    queryBean.getQueryData(token, prometheusUrl);
-                    //triggered = true;
+                queryBean.getQueryData(token, prometheusUrl);
+
+                if(sendOnTrigger && !queryBean.isTriggered(token, prometheusUrl)){
+                    triggered = true;
                 }
 
             }
+
+            buildAllPdf();
 
             if(triggered)
                 sendMails();
@@ -148,11 +154,7 @@ public class QueryManager {
 
     }
 
-    @GET
-    @Path("/mails")
-    @Produces(MediaType.TEXT_PLAIN)
-    // TODO Modificare implementazione per accettare una mappa di data
-    public String sendMails() throws FileNotFoundException {
+    private void buildAllPdf() throws FileNotFoundException {
 
         HashMap<String, ArrayList<QueryResult>> data;
 
@@ -161,6 +163,12 @@ public class QueryManager {
 
             PdfUtils.buildPdf(q, data, new FileOutputStream("tmp/" + q.getId() + ".pdf"));
         }
+    }
+
+    @GET
+    @Path("/mails")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String sendMails() {
 
         mailer.send(MailUtils.buildMailComposed(this.queryList.stream().map(
                 queryBean -> "tmp/" + queryBean.getId() + ".pdf"

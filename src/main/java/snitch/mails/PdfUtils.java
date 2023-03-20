@@ -1,24 +1,22 @@
 package snitch.mails;
 
-import com.itextpdf.text.*;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 import snitch.prometheus.beans.QueryBean;
 import snitch.prometheus.beans.QueryResult;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -37,8 +35,8 @@ public class PdfUtils {
         boolean response = false;
 
         // Plot settings
-        int width = 400;
-        int height = 300;
+        int width = 500;
+        int height = 340;
 
         try {
             //instantiate document and writer
@@ -47,18 +45,17 @@ public class PdfUtils {
 
             //open document
             document.open();
-            document.addTitle("Snitch recap: "+ queryBean.getQueryName());
-            document.add(new Phrase("Snitch recap: "+ queryBean.getQueryName()));
+            document.addTitle("Snitch recap: " + queryBean.getQueryName());
+            document.add(new Phrase("Snitch recap: " + queryBean.getQueryName()));
 
-            for(Map.Entry<String, ArrayList<QueryResult>> line : data.entrySet()){
+            for (Map.Entry<String, ArrayList<QueryResult>> line : data.entrySet()) {
 
-                document.add(new Phrase(line.getKey()));
+                //document.add(new Phrase(line.getKey()));
 
-                if(line.getValue().get(0).query.type.equals(QueryBean.Type.table)){
+                if (line.getValue().get(0).query.type.equals(QueryBean.Type.table)) {
                     document.add(getTableFromData(line.getValue()));
-                }
-                else{
-                    for(QueryResult result: line.getValue()){
+                } else {
+                    for (QueryResult result : line.getValue()) {
                         JFreeChart chart = createChart(getPlotDataset(result), result.podName);
                         BufferedImage bufferedImage = chart.createBufferedImage(width, height);
                         Image image = Image.getInstance(writer, bufferedImage, 1.0f);
@@ -75,18 +72,22 @@ public class PdfUtils {
             writer = null;
             response = true;
 
-        } catch(DocumentException | IOException de) {
+        } catch (DocumentException | IOException de) {
             System.out.println("Impossibile creare documento PDF");
         } finally {
             //release resources
-            if(null != document) {
-                try { document.close(); }
-                catch(Exception ignored) { }
+            if (null != document) {
+                try {
+                    document.close();
+                } catch (Exception ignored) {
+                }
             }
 
-            if(null != writer) {
-                try { writer.close(); }
-                catch(Exception ex) { }
+            if (null != writer) {
+                try {
+                    writer.close();
+                } catch (Exception ex) {
+                }
             }
         }
 
@@ -103,41 +104,39 @@ public class PdfUtils {
         cell = new PdfPCell(new Phrase("Status"));
         result.addCell(cell);
 
-        for(QueryResult q: data){
+        for (QueryResult q : data) {
 
             // Nome pod
             cell = new PdfPCell(new Phrase(q.podName));
             result.addCell(cell);
 
-            if(q.values.get(0) == 1)
+            if (q.values.get(0) == 1)
                 try {
                     try {
                         Image image = Image.getInstance("/snitch/resources/true.png");
-                        image.scaleAbsolute(16,16);
+                        image.scaleAbsolute(16, 16);
                         cell = new PdfPCell(image);
-                    } catch (IOException | BadElementException e){
+                    } catch (IOException | BadElementException e) {
                         Image image = Image.getInstance("kubernetes/snitch/resources/true.png");
-                        image.scaleAbsolute(16,16);
+                        image.scaleAbsolute(16, 16);
                         cell = new PdfPCell(image);
                     }
-                }
-                catch (IOException | BadElementException e){
-                   cell = new PdfPCell(new Phrase("TRUE"));
+                } catch (IOException | BadElementException e) {
+                    cell = new PdfPCell(new Phrase("TRUE"));
                 }
 
             else
-                try{
+                try {
                     try {
                         Image image = Image.getInstance("/snitch/resources/dead.png");
-                        image.scaleAbsolute(16,16);
+                        image.scaleAbsolute(16, 16);
                         cell = new PdfPCell(image);
-                    } catch (IOException | BadElementException e){
+                    } catch (IOException | BadElementException e) {
                         Image image = Image.getInstance("kubernetes/snitch/resources/dead.png");
-                        image.scaleAbsolute(16,16);
+                        image.scaleAbsolute(16, 16);
                         cell = new PdfPCell(image);
                     }
-                }
-                catch (IOException | BadElementException e){
+                } catch (IOException | BadElementException e) {
                     cell = new PdfPCell(new Phrase("FALSE"));
                 }
 
@@ -148,13 +147,13 @@ public class PdfUtils {
         return result;
     }
 
-    private static XYDataset getPlotDataset(QueryResult data){
+    private static XYDataset getPlotDataset(QueryResult data) {
 
         TimeSeriesCollection result = new TimeSeriesCollection();
-        TimeSeries series = new TimeSeries("Date");
+        TimeSeries series = new TimeSeries("Ram usage");
         for (int i = 0; i < data.timestamps.size(); i++) {
             series.addOrUpdate(new Hour(new Date(data.timestamps.get(i) * 1000)),
-                    data.values.get(i));
+                    data.values.get(i) / 1e6);
         }
         result.addSeries(series);
         return result;
@@ -165,20 +164,21 @@ public class PdfUtils {
         JFreeChart chart = ChartFactory.createTimeSeriesChart(
                 name,
                 "Time",
-                "Ram ",
+                "Ram (MegaBytes)",
                 dataset,
-                false,
-                false,
+                true,
+                true,
                 false
         );
 
         XYPlot plot = chart.getXYPlot();
 
-        var renderer = new XYLineAndShapeRenderer();
+
+        var renderer = new XYSplineRenderer(4);
         renderer.setSeriesPaint(0, Color.RED);
         renderer.setSeriesStroke(0, new BasicStroke(1.5f));
-
         plot.setRenderer(renderer);
+
         plot.setBackgroundPaint(Color.white);
 
         plot.setRangeGridlinesVisible(true);
